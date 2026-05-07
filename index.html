@@ -4,351 +4,67 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>技術者倫理検定（架空）</title>
+<link href="https://cdn.jsdelivr.net/npm/lism-css@0/dist/css/main.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; }
 
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: #f5f5f5;
-    color: #1a1a1a;
-    min-height: 100vh;
-  }
+  /* ── 状態・インタラクション（Property Classでは書けないもの）── */
 
-  .wrapper {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 48px 20px 80px;
-  }
+  .exam-card { transition: opacity 0.3s; }
+  .exam-card.answered { opacity: 0.5; }
 
-  /* ヘッダー */
-  .site-header {
-    text-align: center;
-    margin-bottom: 40px;
-  }
-
-  .tag {
-    display: inline-block;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    color: #888;
-    border: 1px solid #ccc;
-    padding: 3px 12px;
-    margin-bottom: 16px;
-  }
-
-  h1 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-
-  .subtitle {
-    font-size: 12px;
-    color: #888;
-    letter-spacing: 0.1em;
-  }
-
-  /* 説明 */
-  .notice {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-left: 3px solid #333;
-    padding: 16px 20px;
-    font-size: 14px;
-    line-height: 1.8;
-    color: #444;
-    margin-bottom: 32px;
-  }
-
-  .notice .pass-note {
-    margin-top: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #1a1a1a;
-  }
-
-  /* プログレス */
-  .progress-wrap { margin-bottom: 28px; }
-
-  .progress-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 6px;
-  }
-
-  .progress-track { height: 2px; background: #e0e0e0; }
-
-  .progress-fill {
-    height: 100%;
-    background: #333;
-    width: 0%;
-    transition: width 0.3s;
-  }
-
-  /* 問題カード */
-  .exam-card {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    margin-bottom: 16px;
-    transition: opacity 0.3s;
-  }
-
-  .exam-card.answered { opacity: 0.55; }
-
-  .card-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid #f0f0f0;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .q-num {
-    font-size: 11px;
-    font-weight: 700;
-    color: #888;
-    padding-top: 2px;
-    flex-shrink: 0;
-    letter-spacing: 0.05em;
-  }
-
-  .q-text {
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 1.6;
-  }
-
-  .card-body {
-    padding: 14px 18px;
-    display: flex;
-    gap: 12px;
-  }
-
-  .btn-answer {
-    flex: 1;
-    padding: 11px 0;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    border: 1px solid #ccc;
-    background: #fafafa;
-    color: #333;
-    transition: all 0.15s;
-    letter-spacing: 0.05em;
-  }
-
-  .btn-answer:hover:not(:disabled) {
-    background: #333;
-    color: #fff;
-    border-color: #333;
-  }
-
+  .btn-answer { cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; width: 100%; }
+  .btn-answer:hover:not(:disabled) { background: var(--color-content); color: var(--color-base); border-color: var(--color-content); }
   .btn-answer:disabled { cursor: not-allowed; }
+  .btn-answer.selected-correct { background: #e8f5e9; border-color: #4caf50 !important; color: #2e7d32; }
+  .btn-answer.selected-wrong   { background: #fbe9e7; border-color: #e57373 !important; color: #c62828; }
 
-  .btn-answer.selected-correct {
-    background: #e8f5e9;
-    border-color: #4caf50;
-    color: #2e7d32;
-  }
-
-  .btn-answer.selected-wrong {
-    background: #fbe9e7;
-    border-color: #e57373;
-    color: #c62828;
-  }
-
-  .answer-badge {
-    display: none;
-    font-size: 12px;
-    padding: 6px 18px;
-    text-align: center;
-    border-top: 1px solid #f0f0f0;
-  }
-
-  .answer-badge.show { display: block; }
+  .answer-badge { display: none; }
+  .answer-badge.show    { display: block; }
   .answer-badge.correct { color: #2e7d32; background: #f1f8e9; }
   .answer-badge.wrong   { color: #c62828; background: #fbe9e7; }
 
-  /* 採点ボタン */
-  .submit-area {
-    text-align: center;
-    margin: 36px 0 0;
-  }
+  .progress-track { height: 2px; background: var(--color-base-3); }
+  .progress-fill  { height: 100%; background: var(--color-content); width: 0%; transition: width 0.3s; }
 
-  .btn-submit {
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    padding: 14px 52px;
-    background: #1a1a1a;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
+  .score-dot       { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--color-border); background: transparent; }
+  .score-dot.filled { background: var(--color-content); border-color: var(--color-content); }
 
-  .btn-submit:hover:not(:disabled) { background: #333; }
-
-  .btn-submit:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-  }
-
-  .submit-note {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #aaa;
-  }
-
-  /* 結果 */
   #result-section { display: none; }
 
-  .result-box {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    padding: 36px 28px;
-    text-align: center;
-    margin-top: 16px;
-  }
+  .btn-submit { cursor: pointer; transition: opacity 0.15s; letter-spacing: 0.15em; }
+  .btn-submit:hover:not(:disabled) { opacity: 0.8; }
+  .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
 
-  .result-label {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    color: #aaa;
-    margin-bottom: 8px;
-  }
+  .btn-retry { cursor: pointer; transition: background 0.15s; }
+  .btn-retry:hover { background: var(--color-base-2); }
 
-  .result-verdict {
-    font-size: 28px;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-bottom: 12px;
-    line-height: 1.5;
-    white-space: pre-line;
-  }
-
-  .result-message {
-    font-size: 14px;
-    color: #555;
-    line-height: 1.9;
-    margin-bottom: 28px;
-  }
-
-  .score-row {
-    display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 28px;
-  }
-
-  .score-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1.5px solid #ccc;
-    background: transparent;
-  }
-
-  .score-dot.filled {
-    background: #1a1a1a;
-    border-color: #1a1a1a;
-  }
-
-  /* 合格証 */
-  .certificate {
-    border: 1px solid #e0e0e0;
-    padding: 24px;
-    max-width: 440px;
-    margin: 0 auto;
-    text-align: center;
-  }
-
-  .cert-title {
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    color: #aaa;
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #eee;
-  }
-
-  .cert-number {
-    font-size: 14px;
-    font-weight: 700;
-    color: #1a1a1a;
-    letter-spacing: 0.05em;
-    margin-bottom: 6px;
-  }
-
-  .cert-body {
-    font-size: 13px;
-    color: #555;
-    line-height: 2;
-    margin-bottom: 16px;
-  }
-
-  .cert-issued {
-    font-size: 11px;
-    color: #aaa;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-  }
-
-  .btn-retry {
-    margin-top: 28px;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 13px;
-    padding: 9px 28px;
-    background: transparent;
-    color: #888;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    letter-spacing: 0.1em;
-    transition: all 0.15s;
-  }
-
-  .btn-retry:hover {
-    background: #f0f0f0;
-    color: #333;
-  }
-
-  hr.divider {
-    border: none;
-    border-top: 1px solid #e0e0e0;
-    margin: 32px 0 0;
-  }
-
-  footer {
-    text-align: center;
-    margin-top: 56px;
-    font-size: 11px;
-    color: #bbb;
-    line-height: 2;
-  }
+  .result-verdict { white-space: pre-line; }
 </style>
 </head>
-<body>
-<div class="wrapper">
+<body class="-bgc:base-2">
 
-  <header class="site-header">
-    <div class="tag">架空 — JETCE</div>
-    <h1>技術者倫理検定</h1>
-    <p class="subtitle">ENGINEER ETHICS CERTIFICATION EXAMINATION</p>
+<!-- ページ全体: is--wrapper でmax-width・中央寄せ、l--stack で縦並び -->
+<div class="l--stack is--wrapper -py:50 -g:40">
+
+  <!-- ヘッダー -->
+  <header class="l--stack -ai:c -ta:c -g:10">
+    <span class="-fz:xs -c:content-3 -bd:1 -px:20 -py:5">架空 — JETCE</span>
+    <h1 class="-fz:xl -fw:bold">技術者倫理検定</h1>
+    <p class="-fz:xs -c:content-3" style="letter-spacing:.1em">ENGINEER ETHICS CERTIFICATION EXAMINATION</p>
   </header>
 
-  <div class="notice">
-    技術者としての倫理意識を確認するための架空の試験です。<br>
-    全3問、「はい」または「いいえ」でお答えください。
-    <p class="pass-note">◎ 合格基準：2点以上で合格</p>
+  <!-- 受験案内 -->
+  <div class="-bgc:base -bd:1 -p:20 -fz:sm -c:content-2" style="border-left:3px solid var(--color-content)">
+    <p>技術者としての倫理意識を確認するための架空の試験です。<br>
+    全3問、「はい」または「いいえ」でお答えください。</p>
+    <p class="-fw:bold -c:content -mt:15">◎ 合格基準：2点以上で合格</p>
   </div>
 
-  <div class="progress-wrap">
-    <div class="progress-meta">
+  <!-- プログレスバー -->
+  <div class="l--stack -g:10">
+    <div class="l--flex -jc:between -fz:xs -c:content-3">
       <span>進捗</span>
       <span id="progress-text">0 / 3</span>
     </div>
@@ -357,86 +73,105 @@
     </div>
   </div>
 
-  <section id="exam-section">
+  <!-- 試験セクション -->
+  <section id="exam-section" class="l--stack -g:20">
 
-    <div class="exam-card" id="card-1">
-      <div class="card-header">
-        <span class="q-num">Q1</span>
-        <span class="q-text">技術者倫理について少しでも意識していますか？</span>
+    <!-- 問題カード × 3 -->
+    <div class="exam-card -bgc:base -bd:1" id="card-1">
+      <div class="l--flex -ai:fs -g:15 -p:20" style="border-bottom:1px solid var(--color-border)">
+        <span class="-fz:xs -fw:bold -c:content-3" style="padding-top:2px;flex-shrink:0">Q1</span>
+        <span class="-fz:sm" style="font-weight:500;line-height:1.6">技術者倫理について少しでも意識していますか？</span>
       </div>
-      <div class="card-body">
-        <button class="btn-answer" onclick="answer(1,'yes')">はい</button>
-        <button class="btn-answer" onclick="answer(1,'no')">いいえ</button>
+      <div class="l--flex -g:15 -p:20">
+        <button class="btn-answer -bd:1 -bgc:base -fz:sm -fw:bold -py:15" onclick="answer(1,'yes')">はい</button>
+        <button class="btn-answer -bd:1 -bgc:base -fz:sm -fw:bold -py:15" onclick="answer(1,'no')">いいえ</button>
       </div>
-      <div class="answer-badge" id="badge-1"></div>
+      <div class="answer-badge -fz:xs -ta:c -py:10" id="badge-1"></div>
     </div>
 
-    <div class="exam-card" id="card-2">
-      <div class="card-header">
-        <span class="q-num">Q2</span>
-        <span class="q-text">技術者倫理を守る「つもり」はありますか？</span>
+    <div class="exam-card -bgc:base -bd:1" id="card-2">
+      <div class="l--flex -ai:fs -g:15 -p:20" style="border-bottom:1px solid var(--color-border)">
+        <span class="-fz:xs -fw:bold -c:content-3" style="padding-top:2px;flex-shrink:0">Q2</span>
+        <span class="-fz:sm" style="font-weight:500;line-height:1.6">技術者倫理を守る「つもり」はありますか？</span>
       </div>
-      <div class="card-body">
-        <button class="btn-answer" onclick="answer(2,'yes')">はい</button>
-        <button class="btn-answer" onclick="answer(2,'no')">いいえ</button>
+      <div class="l--flex -g:15 -p:20">
+        <button class="btn-answer -bd:1 -bgc:base -fz:sm -fw:bold -py:15" onclick="answer(2,'yes')">はい</button>
+        <button class="btn-answer -bd:1 -bgc:base -fz:sm -fw:bold -py:15" onclick="answer(2,'no')">いいえ</button>
       </div>
-      <div class="answer-badge" id="badge-2"></div>
+      <div class="answer-badge -fz:xs -ta:c -py:10" id="badge-2"></div>
     </div>
 
-    <div class="exam-card" id="card-3">
-      <div class="card-header">
-        <span class="q-num">Q3</span>
-        <span class="q-text">技術者倫理について直近1日で他者から指摘されたことはありますか？</span>
+    <div class="exam-card -bgc:base -bd:1" id="card-3">
+      <div class="l--flex -ai:fs -g:15 -p:20" style="border-bottom:1px solid var(--color-border)">
+        <span class="-fz:xs -fw:bold -c:content-3" style="padding-top:2px;flex-shrink:0">Q3</span>
+        <span class="-fz:sm" style="font-weight:500;line-height:1.6">技術者倫理について直近1日で他者から指摘されたことはありますか？</span>
       </div>
-      <div class="card-body">
-        <button class="btn-answer" onclick="answer(3,'yes')">はい</button>
-        <button class="btn-answer" onclick="answer(3,'no')">いいえ</button>
+      <div class="l--flex -g:15 -p:20">
+        <button class="btn-answer -bd:1 -bgc:base -fz:sm -fw:bold -py:15" onclick="answer(3,'yes')">はい</button>
+        <button class="btn-answer -bd:1 -bgc:base -fz:sm -fw:bold -py:15" onclick="answer(3,'no')">いいえ</button>
       </div>
-      <div class="answer-badge" id="badge-3"></div>
+      <div class="answer-badge -fz:xs -ta:c -py:10" id="badge-3"></div>
     </div>
 
-    <hr class="divider">
+    <hr class="-bd:1">
 
-    <div class="submit-area">
-      <button class="btn-submit" id="btn-submit" disabled onclick="submitExam()">採点する</button>
-      <p class="submit-note">全問回答後に採点できます</p>
+    <!-- 採点ボタン -->
+    <div class="l--stack -ai:c -g:10">
+      <button
+        class="btn-submit -bgc:content -c:base -fz:sm -fw:bold -px:50 -py:20"
+        id="btn-submit"
+        disabled
+        onclick="submitExam()"
+      >採点する</button>
+      <p class="-fz:xs -c:content-3">全問回答後に採点できます</p>
     </div>
 
-  </section>
+  </section><!-- /exam-section -->
 
+  <!-- 結果セクション -->
   <section id="result-section">
-    <div class="result-box">
-      <p class="result-label">RESULT</p>
-      <div class="score-row">
+    <div class="l--stack -bgc:base -bd:1 -p:40 -ai:c -ta:c -g:20">
+
+      <p class="-fz:xs -c:content-3" style="letter-spacing:.2em">RESULT</p>
+
+      <!-- スコアドット -->
+      <div class="l--flex -g:10 -jc:c">
         <div class="score-dot" id="dot-1"></div>
         <div class="score-dot" id="dot-2"></div>
         <div class="score-dot" id="dot-3"></div>
       </div>
-      <div class="result-verdict" id="verdict-text"></div>
-      <div class="result-message" id="verdict-message"></div>
 
-      <div class="certificate">
-        <p class="cert-title">合格認定書（架空）</p>
-        <p class="cert-number" id="cert-number"></p>
-        <p class="cert-body">
+      <div class="result-verdict -fz:xl -fw:bold" id="verdict-text"></div>
+      <div class="-fz:sm -c:content-2" style="line-height:1.9" id="verdict-message"></div>
+
+      <!-- 合格証 -->
+      <div class="l--stack -bd:1 -p:30 -g:15 -ta:c" style="width:100%;max-width:440px">
+        <p class="-fz:xs -c:content-3" style="letter-spacing:.25em;padding-bottom:12px;border-bottom:1px solid var(--color-border)">合格認定書（架空）</p>
+        <p class="-fz:sm -fw:bold" id="cert-number"></p>
+        <p class="-fz:xs -c:content-2" style="line-height:2">
           上記の者は、架空技術者倫理検定において<br>
           所定の基準を満たしたことをここに証します。
         </p>
-        <p class="cert-issued" id="cert-issued"></p>
+        <p class="-fz:xs -c:content-3" style="padding-top:10px;border-top:1px solid var(--color-border)" id="cert-issued"></p>
       </div>
 
-      <div>
-        <button class="btn-retry" onclick="retryExam()">もう一度受験する</button>
-      </div>
+      <button
+        class="btn-retry -bd:1 -fz:xs -c:content-3 -px:30 -py:10"
+        onclick="retryExam()"
+        style="background:transparent"
+      >もう一度受験する</button>
+
     </div>
   </section>
 
-  <footer>
+  <!-- フッター -->
+  <footer class="-ta:c -fz:xs -c:content-3" style="line-height:2">
     架空技術者倫理検定センター（JETCE）<br>
     本検定はフィクションです。実在の検定・機関とは一切関係ありません。
   </footer>
 
-</div>
+</div><!-- /wrapper -->
+
 <script>
   const answers = { 1: null, 2: null, 3: null };
   // Q1・Q2は「はい」、Q3のみ「いいえ」が正答
